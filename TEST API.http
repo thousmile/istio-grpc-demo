@@ -1,5 +1,5 @@
 ### http sayHello
-GET {{baseUrl}}/rest/hello?name=tom1
+GET {{baseUrl}}/rest/hello?name=tom
 Content-Type: application/json
 Host: k8s.example.com
 
@@ -17,7 +17,7 @@ Host: k8s.example.com
 
 
 ### istio grpc sayHello
-GET {{baseUrl}}/client/grpc/hello?name=tom
+GET {{baseUrl}}/client/grpc/hello?name=tom1
 Content-Type: application/json
 Host: k8s.example.com
 

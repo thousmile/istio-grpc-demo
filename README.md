@@ -9,4 +9,8 @@ docker build -t istio-grpc-client:1.1 .
 
 docker build -t istio-grpc-server:1.1 .
 
+kubectl apply -f k8s.yaml
+
+kubectl apply -f istio.yaml
+
 ```

@@ -2,7 +2,7 @@ package com.xaaef.grpc.server.rest;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 
+@Slf4j
 @RestController
 @RequestMapping
 public class IndexController {
@@ -29,9 +30,10 @@ public class IndexController {
             throw new RuntimeException("名称不能为tom");
         }
         var hostAddress = InetAddress.getLocalHost().getHostAddress();
-        var msg = String.format("Hello grpc-server [%s] ==> %s ==> %s", hostAddress, name, UUID.randomUUID());
+        var msg = String.format("http grpc-server [%s] ==> %s ==> %s", hostAddress, name, UUID.randomUUID());
+        log.info(msg);
         return Map.of(
-                "code", String.format("http %s -> %s", name, name),
+                "code", String.format("http %s", name),
                 "message", msg,
                 "time", LocalTime.now().format(DatePattern.NORM_TIME_FORMATTER),
                 "date", LocalDate.now().format(DatePattern.NORM_DATE_FORMATTER),
@@ -39,8 +41,11 @@ public class IndexController {
                 "instant", Instant.now().toString(),
                 "str", RandomUtil.randomString(20),
                 "double1", String.valueOf(RandomUtil.randomDouble(10, 100)),
-                "list", List.of("a", "b", "c").toString(),
-                "map", Map.of("name", "jack", "age", 26).toString()
+                "list", String.join(",", RandomUtil.randomEleList(List.of("a", "b", "c", "d", "e", "f", "j", "h"), 3)),
+                "map", Map.of(
+                        "name", RandomUtil.randomString(5),
+                        "age", RandomUtil.randomInt(18, 36)
+                ).toString()
         );
     }
 
