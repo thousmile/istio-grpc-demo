@@ -1,0 +1,94 @@
+################## istio ##################
+# nonk8s
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: ext-host-gwy
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - k8s.example.com
+
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+spec:
+  mtls:
+    mode: STRICT
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: istio-grpc-server
+spec:
+  host: istio-grpc-server
+  trafficPolicy:
+    loadBalancer:
+      simple: LEAST_REQUEST
+    connectionPool:
+      tcp:
+        maxConnections: 1024
+        connectTimeout: 3s
+        idleTimeout: 1h
+        tcpKeepalive:
+          time: 7200s
+          interval: 75s
+      http:
+        http1MaxPendingRequests: 1024
+        http2MaxRequests: 1024
+        #h2UpgradePolicy: UPGRADE
+        #useClientProtocol: false
+    # 下面的配置意思是：如果在30秒内，出现5次5xx的错误，就将“不健康的服务”禁止调用3分钟。最多把 100%的服务 禁用
+    outlierDetection:
+      # 连续的 5xx 错误超过 5次 就开始弹出主机
+      consecutive5xxErrors: 5
+      # 检测 时间 间隔为 30 秒，默认值为10s
+      interval: 30s
+      # 弹出的 时长3分钟 默认值为30s
+      baseEjectionTime: 3m
+      #上游服务的负载均衡池中可弹出的主机的最大百分比。默认为10%。 最大弹出比例 100%
+      maxEjectionPercent: 100
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: istio-grpc-client
+spec:
+  hosts:
+    - k8s.example.com
+    - istio-grpc-client
+  gateways:
+    - ext-host-gwy
+  http:
+    - match:
+        - uri:
+            prefix: /client/
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: istio-grpc-client
+            port:
+              number: 18030
+      timeout: 1.0s
+    - match:
+        - uri:
+            prefix: /server/
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: istio-grpc-server
+            port:
+              number: 18010
+      timeout: 1.0s

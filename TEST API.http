@@ -1,0 +1,23 @@
+### http sayHello
+GET {{baseUrl}}/rest/hello?name=tom1
+Content-Type: application/json
+Host: k8s.example.com
+
+
+### grpc sayHello
+GET {{baseUrl}}/grpc/hello?name=tom
+Content-Type: application/json
+Host: k8s.example.com
+
+
+### istio http sayHello
+GET {{baseUrl}}/client/rest/hello?name=tom1
+Content-Type: application/json
+Host: k8s.example.com
+
+
+### istio grpc sayHello
+GET {{baseUrl}}/client/grpc/hello?name=tom
+Content-Type: application/json
+Host: k8s.example.com
+

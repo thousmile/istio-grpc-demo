@@ -1,0 +1,12 @@
+server:
+  port: 18010
+grpc:
+  server:
+    port: 18011
+
+spring:
+  application:
+    name: grpc-server
+  threads:
+    virtual:
+      enabled: true

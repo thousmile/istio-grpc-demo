@@ -1,0 +1,223 @@
+################## k8s consumer ##################
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio-grpc-client
+  labels:
+    app: istio-grpc-client
+data:
+  application.yml: |
+    server:
+      port: 18030
+    spring:
+      application:
+        name: istio-grpc-client
+      profiles:
+        active: prod
+      threads:
+        virtual:
+          enabled: true
+      cloud:
+        openfeign:
+          client:
+            config:
+              default:
+                connect-timeout: 3000
+                read-timeout: 3000
+                logger-level: full
+          compression:
+            request:
+              enabled: true
+            response:
+              enabled: false
+          circuitbreaker:
+            enabled: true
+          okhttp:
+            enabled: true
+
+    feign:
+      client:
+        provider: http://istio-grpc-server.default.svc:18010
+
+    grpc:
+      server:
+        port: 18031
+      client:
+        GLOBAL:
+          negotiation-type: plaintext
+          enable-keep-alive: true
+          keep-alive-without-calls: true
+        istio-grpc-server:
+          address: dns:///istio-grpc-server.default.svc:18011
+
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: "*"
+      endpoint:
+        health:
+          show-details: ALWAYS
+      health:
+        kubernetes:
+          enabled: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istio-grpc-client
+  labels:
+    app: istio-grpc-client
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: istio-grpc-client
+      labels:
+        app: istio-grpc-client
+    spec:
+      containers:
+        - name: istio-grpc-client
+          image: istio-grpc-client:1.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 18030
+            - name: grpc
+              containerPort: 18031
+          livenessProbe:
+            httpGet:
+              port: 18030
+              path: /actuator/health
+          readinessProbe:
+            httpGet:
+              port: 18030
+              path: /actuator/health
+          volumeMounts:
+            - mountPath: /config
+              name: config-volume
+      volumes:
+        - name: config-volume
+          configMap:
+            name: istio-grpc-client
+      restartPolicy: Always
+  selector:
+    matchLabels:
+      app: istio-grpc-client
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: istio-grpc-client
+  labels:
+    app: istio-grpc-client
+spec:
+  type: NodePort
+  selector:
+    app: istio-grpc-client
+  ports:
+    - name: http
+      port: 18030
+      targetPort: 18030
+      nodePort: 32030
+    - name: grpc
+      port: 18031
+      targetPort: 18031
+      nodePort: 32031
+
+################## k8s provider ##################
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: istio-grpc-server
+  labels:
+    app: istio-grpc-server
+data:
+  application.yml: |
+    server:
+      port: 18010
+    grpc:
+      server:
+        port: 18011
+    spring:
+      application:
+        name: istio-grpc-server
+      profiles:
+        active: prod
+      threads:
+        virtual:
+          enabled: true
+
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: "*"
+      endpoint:
+        health:
+          show-details: ALWAYS
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istio-grpc-server
+  labels:
+    app: istio-grpc-server
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: istio-grpc-server
+      labels:
+        app: istio-grpc-server
+    spec:
+      containers:
+        - name: istio-grpc-server
+          image: istio-grpc-server:1.1
+          ports:
+            - name: http
+              containerPort: 18010
+            - name: grpc
+              containerPort: 18011
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              port: 18010
+              path: /actuator/health
+          readinessProbe:
+            httpGet:
+              port: 18010
+              path: /actuator/health
+          volumeMounts:
+            - mountPath: /config
+              name: config-volume
+      volumes:
+        - name: config-volume
+          configMap:
+            name: istio-grpc-server
+      restartPolicy: Always
+  selector:
+    matchLabels:
+      app: istio-grpc-server
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: istio-grpc-server
+  labels:
+    app: istio-grpc-server
+spec:
+  type: ClusterIP
+  selector:
+    app: istio-grpc-server
+  ports:
+    - name: http
+      port: 18010
+      targetPort: 18010
+    - name: grpc
+      port: 18011
+      targetPort: 18011

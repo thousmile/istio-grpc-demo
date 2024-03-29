@@ -1,0 +1,41 @@
+server:
+  port: 18030
+
+spring:
+  application:
+    name: grpc-client
+  profiles:
+    active: prod
+  threads:
+    virtual:
+      enabled: true
+
+
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 3000
+            read-timeout: 3000
+            logger-level: full
+      compression:
+        request:
+          enabled: true
+        response:
+          enabled: false
+      circuitbreaker:
+        enabled: true
+      okhttp:
+        enabled: true
+
+grpc:
+  server:
+    port: 18031
+  client:
+    GLOBAL:
+      negotiation-type: plaintext
+      enable-keep-alive: true
+      keep-alive-without-calls: true
+    istio-grpc-server:
+      address: static://localhost:18011
