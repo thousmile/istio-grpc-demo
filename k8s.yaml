@@ -4,8 +4,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: istio-grpc-client
+  namespace: default
   labels:
     app: istio-grpc-client
+    version: v11
 data:
   application.yml: |
     server:
@@ -67,10 +69,15 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: istio-grpc-client
+  namespace: default
   labels:
     app: istio-grpc-client
+    version: v11
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: istio-grpc-client
   template:
     metadata:
       name: istio-grpc-client
@@ -102,17 +109,16 @@ spec:
           configMap:
             name: istio-grpc-client
       restartPolicy: Always
-  selector:
-    matchLabels:
-      app: istio-grpc-client
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: istio-grpc-client
+  namespace: default
   labels:
     app: istio-grpc-client
+    version: v11
 spec:
   type: NodePort
   selector:
@@ -133,8 +139,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: istio-grpc-server
+  namespace: default
   labels:
     app: istio-grpc-server
+    version: v11
 data:
   application.yml: |
     server:
@@ -164,10 +172,15 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: istio-grpc-server
+  namespace: default
   labels:
     app: istio-grpc-server
+    version: v11
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: istio-grpc-server
   template:
     metadata:
       name: istio-grpc-server
@@ -199,17 +212,16 @@ spec:
           configMap:
             name: istio-grpc-server
       restartPolicy: Always
-  selector:
-    matchLabels:
-      app: istio-grpc-server
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: istio-grpc-server
+  namespace: default
   labels:
     app: istio-grpc-server
+    version: v11
 spec:
   type: ClusterIP
   selector:

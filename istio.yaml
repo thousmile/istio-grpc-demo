@@ -4,6 +4,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: ext-host-gwy
+  namespace: default
 spec:
   selector:
     istio: ingressgateway
@@ -13,24 +14,62 @@ spec:
         name: http
         protocol: HTTP
       hosts:
-        - k8s.example.com
+        - '*'
 
 ---
 apiVersion: security.istio.io/v1beta1
 kind: PeerAuthentication
 metadata:
-  name: default
+  name: default-mtls
+  namespace: default
 spec:
   mtls:
     mode: STRICT
 
 ---
 apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: istio-grpc-server
+  namespace: default
+spec:
+  hosts:
+    - '*'
+  gateways:
+    - ext-host-gwy
+  http:
+    - match:
+        - uri:
+            prefix: /server/
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: istio-grpc-server
+            #subset: v11
+            port:
+              number: 18010
+      timeout: 1.5s
+    - route:
+        - destination:
+            host: istio-grpc-server
+            #subset: v11
+            port:
+              number: 18010
+      timeout: 1.5s
+
+---
+apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
 metadata:
   name: istio-grpc-server
+  namespace: default
 spec:
   host: istio-grpc-server
+  subsets:
+    - name: v11
+      labels:
+        version: v11
   trafficPolicy:
     loadBalancer:
       simple: LEAST_REQUEST
@@ -66,10 +105,10 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: istio-grpc-client
+  namespace: default
 spec:
   hosts:
-    - k8s.example.com
-    - istio-grpc-client
+    - '*'
   gateways:
     - ext-host-gwy
   http:
@@ -81,17 +120,27 @@ spec:
       route:
         - destination:
             host: istio-grpc-client
+            #subset: v11
             port:
               number: 18030
-      timeout: 1.0s
-    - match:
-        - uri:
-            prefix: /server/
-      rewrite:
-        uri: /
-      route:
+      timeout: 1.5s
+    - route:
         - destination:
-            host: istio-grpc-server
+            host: istio-grpc-client
+            #subset: v11
             port:
-              number: 18010
-      timeout: 1.0s
+              number: 18030
+      timeout: 1.5s
+
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: istio-grpc-client
+  namespace: default
+spec:
+  host: istio-grpc-client
+  subsets:
+    - name: v11
+      labels:
+        version: v11

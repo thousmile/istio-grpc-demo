@@ -4,8 +4,8 @@ Content-Type: application/json
 Host: k8s.example.com
 
 
-### grpc sayHello
-GET {{baseUrl}}/grpc/hello?name=tom
+### server sayHello
+GET {{baseUrl}}/server/hello?name=tom1
 Content-Type: application/json
 Host: k8s.example.com
 
