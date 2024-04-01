@@ -1,4 +1,4 @@
-################## k8s consumer ##################
+################## k8s ##################
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -64,6 +64,7 @@ data:
       health:
         kubernetes:
           enabled: true
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -78,16 +79,21 @@ spec:
   selector:
     matchLabels:
       app: istio-grpc-client
+      version: v11
   template:
     metadata:
       name: istio-grpc-client
       labels:
         app: istio-grpc-client
+        version: v11
     spec:
       containers:
         - name: istio-grpc-client
           image: istio-grpc-client:1.1
           imagePullPolicy: IfNotPresent
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
           ports:
             - name: http
               containerPort: 18030
@@ -110,6 +116,7 @@ spec:
             name: istio-grpc-client
       restartPolicy: Always
 
+
 ---
 apiVersion: v1
 kind: Service
@@ -118,11 +125,13 @@ metadata:
   namespace: default
   labels:
     app: istio-grpc-client
+    service: istio-grpc-client
     version: v11
 spec:
   type: NodePort
   selector:
     app: istio-grpc-client
+    version: v11
   ports:
     - name: http
       port: 18030
@@ -134,6 +143,7 @@ spec:
       nodePort: 32031
 
 ################## k8s provider ##################
+
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -167,6 +177,7 @@ data:
       endpoint:
         health:
           show-details: ALWAYS
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -181,15 +192,20 @@ spec:
   selector:
     matchLabels:
       app: istio-grpc-server
+      version: v11
   template:
     metadata:
       name: istio-grpc-server
       labels:
         app: istio-grpc-server
+        version: v11
     spec:
       containers:
         - name: istio-grpc-server
           image: istio-grpc-server:1.1
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
           ports:
             - name: http
               containerPort: 18010
@@ -213,6 +229,7 @@ spec:
             name: istio-grpc-server
       restartPolicy: Always
 
+
 ---
 apiVersion: v1
 kind: Service
@@ -221,11 +238,13 @@ metadata:
   namespace: default
   labels:
     app: istio-grpc-server
+    service: istio-grpc-server
     version: v11
 spec:
   type: ClusterIP
   selector:
     app: istio-grpc-server
+    version: v11
   ports:
     - name: http
       port: 18010

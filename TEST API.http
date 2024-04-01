@@ -1,23 +1,22 @@
 ### http sayHello
-GET {{baseUrl}}/rest/hello?name=tom
+GET http://{{baseHost}}/rest/hello?name=tom
 Content-Type: application/json
 Host: k8s.example.com
 
 
-### server sayHello
-GET {{baseUrl}}/server/hello?name=tom1
+### istio server http sayHello
+GET http://{{baseHost}}/server/hello?name=tom1
 Content-Type: application/json
 Host: k8s.example.com
 
 
-### istio http sayHello
-GET {{baseUrl}}/client/rest/hello?name=tom1
+### istio client http sayHello
+GET http://{{baseHost}}/client/rest/hello?name=tom1
 Content-Type: application/json
 Host: k8s.example.com
 
 
-### istio grpc sayHello
-GET {{baseUrl}}/client/grpc/hello?name=tom1
+### istio client grpc sayHello
+GET http://{{baseHost}}/client/grpc/hello?name=tom1
 Content-Type: application/json
 Host: k8s.example.com
-
