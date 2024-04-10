@@ -9,7 +9,7 @@ metadata:
     app: istio-grpc-client
     version: v11
 data:
-  application.yml: |
+  application.yaml: |
     server:
       port: 18030
     spring:
@@ -154,7 +154,7 @@ metadata:
     app: istio-grpc-server
     version: v11
 data:
-  application.yml: |
+  application.yaml: |
     server:
       port: 18010
     grpc:

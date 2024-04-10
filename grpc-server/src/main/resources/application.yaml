@@ -1,5 +1,8 @@
 server:
   port: 18010
+  http2:
+    enabled: true
+
 grpc:
   server:
     port: 18011

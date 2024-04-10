@@ -29,9 +29,8 @@ spring:
       okhttp:
         enabled: true
 
+
 grpc:
-  server:
-    port: 18031
   client:
     GLOBAL:
       negotiation-type: plaintext

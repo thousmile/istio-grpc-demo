@@ -11,12 +11,14 @@ Host: k8s.example.com
 
 
 ### istio client http sayHello
-GET http://{{baseHost}}/client/rest/hello?name=tom1
+GET http://{{baseHost}}/rest/hello?name=tom1
 Content-Type: application/json
 Host: k8s.example.com
 
 
 ### istio client grpc sayHello
-GET http://{{baseHost}}/client/grpc/hello?name=tom1
+GET http://{{baseHost}}/grpc/hello?name=tom1
 Content-Type: application/json
 Host: k8s.example.com
+
+
